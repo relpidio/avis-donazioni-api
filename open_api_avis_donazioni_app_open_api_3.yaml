@@ -1,0 +1,485 @@
+openapi: 3.0.3
+info:
+  title: AVIS Donazioni API
+  version: '1.0.0'
+  description: |
+    API per l'app mobile AVIS (Italia) per la gestione delle donazioni di sangue.
+    Lingua primaria: italiano (supporto inglese opzionalmente). Implementazione MVP
+    ispirata al NHS Give Blood (booking, centri, storico donazioni, notifiche).
+  contact:
+    name: Team Tecnico AVIS
+    url: https://www.avis.it
+    email: dev@avis.it
+servers:
+  - url: https://api.avis.it/v1
+    description: API produzione (esempio)
+  - url: https://staging.api.avis.it/v1
+    description: Ambiente di staging
+tags:
+  - name: auth
+    description: Autenticazione e gestione account donatore
+  - name: donors
+    description: Profili donatori e storico
+  - name: centers
+    description: Centri di raccolta e disponibilità
+  - name: appointments
+    description: Prenotazioni
+  - name: tests
+    description: Risultati esami
+  - name: notifications
+    description: Notifiche push e subscription
+paths:
+  /auth/register:
+    post:
+      tags:
+        - auth
+      summary: Registra un nuovo donatore
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Donatore creato
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Donor'
+        '400':
+          description: Bad request
+  /auth/login:
+    post:
+      tags:
+        - auth
+      summary: Login (email + password) / SSO
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Token di accesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                  token_type:
+                    type: string
+                    example: Bearer
+  /donors/{donorId}:
+    get:
+      tags:
+        - donors
+      summary: Recupera profilo donatore
+      parameters:
+        - name: donorId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Profilo donatore
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Donor'
+    put:
+      tags:
+        - donors
+      summary: Aggiorna dati donatore
+      parameters:
+        - name: donorId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DonorUpdate'
+      responses:
+        '200':
+          description: Donatore aggiornato
+  /centers:
+    get:
+      tags:
+        - centers
+      summary: Lista centri (filtro per regione/coordinate/tipo)
+      parameters:
+        - in: query
+          name: lat
+          schema:
+            type: number
+            format: double
+        - in: query
+          name: lng
+          schema:
+            type: number
+            format: double
+        - in: query
+          name: radius_km
+          schema:
+            type: integer
+            default: 50
+        - in: query
+          name: region
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista centri
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Center'
+  /centers/{centerId}/availability:
+    get:
+      tags:
+        - centers
+      summary: Disponibilità (slots) per centro
+      parameters:
+        - name: centerId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: date_from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: date_to
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Slots disponibili
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Slot'
+  /appointments:
+    get:
+      tags:
+        - appointments
+      summary: Lista appuntamenti del donatore
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista appuntamenti
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Appointment'
+    post:
+      tags:
+        - appointments
+      summary: Crea prenotazione
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppointmentCreate'
+      responses:
+        '201':
+          description: Prenotazione creata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+  /appointments/{appointmentId}:
+    put:
+      tags:
+        - appointments
+      summary: Reagenda prenotazione
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: appointmentId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppointmentUpdate'
+      responses:
+        '200':
+          description: Prenotazione aggiornata
+    delete:
+      tags:
+        - appointments
+      summary: Annulla prenotazione
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: appointmentId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Prenotazione cancellata
+  /donors/{donorId}/tests:
+    get:
+      tags:
+        - tests
+      summary: Elenco risultati esami del donatore (PDF/valori)
+      parameters:
+        - name: donorId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista risultati
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TestResult'
+  /notifications/subscribe:
+    post:
+      tags:
+        - notifications
+      summary: Registra token per notifiche push
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                device_token:
+                  type: string
+                platform:
+                  type: string
+                  enum: [ios, android]
+                preferences:
+                  type: object
+      responses:
+        '201':
+          description: Token registrato
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    oauth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.avis.it/authorize
+          tokenUrl: https://auth.avis.it/token
+          scopes:
+            openid: OpenID Connect scope
+            profile: Accesso profilo base
+  schemas:
+    RegisterRequest:
+      type: object
+      required: [first_name, last_name, email, codice_fiscale, password, gdpr_consent]
+      properties:
+        first_name:
+          type: string
+        last_name:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        codice_fiscale:
+          type: string
+          description: "Codice Fiscale italiano (sostituisce 'CPF')"
+        dob:
+          type: string
+          format: date
+        blood_group:
+          type: string
+          example: "A+"
+        password:
+          type: string
+        gdpr_consent:
+          type: boolean
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+    Donor:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        first_name:
+          type: string
+        last_name:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        codice_fiscale:
+          type: string
+        dob:
+          type: string
+          format: date
+        blood_group:
+          type: string
+        donation_history:
+          type: array
+          items:
+            $ref: '#/components/schemas/DonationRecord'
+        gdpr_consent:
+          type: boolean
+    DonorUpdate:
+      type: object
+      properties:
+        phone:
+          type: string
+        email:
+          type: string
+        gdpr_consent:
+          type: boolean
+    DonationRecord:
+      type: object
+      properties:
+        donation_id:
+          type: string
+        date:
+          type: string
+          format: date
+        type:
+          type: string
+          example: whole_blood
+        center_id:
+          type: string
+    Center:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        address:
+          type: string
+        lat:
+          type: number
+          format: double
+        lng:
+          type: number
+          format: double
+        phone:
+          type: string
+        opening_hours:
+          type: string
+        donation_types:
+          type: array
+          items:
+            type: string
+            example: ["whole_blood","plasma"]
+    Slot:
+      type: object
+      properties:
+        slot_id:
+          type: string
+        start:
+          type: string
+          format: date-time
+        end:
+          type: string
+          format: date-time
+        available:
+          type: integer
+    AppointmentCreate:
+      type: object
+      required: [donor_id, center_id, slot_id]
+      properties:
+        donor_id:
+          type: string
+        center_id:
+          type: string
+        slot_id:
+          type: string
+        notes:
+          type: string
+    Appointment:
+      type: object
+      properties:
+        appointment_id:
+          type: string
+        donor_id:
+          type: string
+        center_id:
+          type: string
+        slot:
+          $ref: '#/components/schemas/Slot'
+        status:
+          type: string
+          enum: [booked, cancelled, completed]
+    AppointmentUpdate:
+      type: object
+      properties:
+        slot_id:
+          type: string
+    TestResult:
+      type: object
+      properties:
+        test_id:
+          type: string
+        date:
+          type: string
+          format: date
+        summary:
+          type: string
+        file_url:
+          type: string
+          format: uri
+
+x-notes:
+  - branding: "Usare colori istituzionali AVIS: letters Pantone 300 (blu) + goccia Pantone 032 (rosso). Vedere il manuale immagine coordinata AVIS per dettagli: https://www.avis.it/application/files/2016/0621/9615/Manuale_immagine_coordinata_2020.pdf"
+  - language: "Primary language: it-IT — All user-facing strings must be localizable (it/en)."
+  - gdpr: "Assicurarsi che tutti i consensi siano tracciati e che i dati sensibili (risultati esami) siano cifrati at-rest e in-transit."
