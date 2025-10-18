@@ -1,0 +1,25 @@
+# macOS
+.DS_Store
+
+# Node
+node_modules/
+dist/
+.env
+npm-debug.log
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+pip-wheel-metadata/
+*.egg-info/
+
+# Mobile / Expo
+.expo/
+android/
+ios/
+
+# IDEs
+.vscode/
+.idea/

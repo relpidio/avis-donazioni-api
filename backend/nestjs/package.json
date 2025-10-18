@@ -1,0 +1,9 @@
+{
+  "name": "avis-backend-nestjs",
+  "version": "0.0.1",
+  "scripts": {
+    "start": "nest start",
+    "start:dev": "nest start --watch",
+    "build": "nest build"
+  }
+}
