@@ -1,3 +1,39 @@
+#!/bin/bash
+# ============================================================
+#  AVIS Donazioni - Setup Backend (NestJS + Python FastAPI)
+#  Autor: ChatGPT (para Rodrigo)
+#  Caminho: /Users/rodrigoelpidio/Avis_App/setup_avis_backend.sh
+# ============================================================
+
+set -e
+
+PROJECT_ROOT="/Users/rodrigoelpidio/Avis_App"
+OPENAPI_SPEC="$PROJECT_ROOT/openapi/openapi.yaml"
+
+# ------------------------------------------------------------
+# Funções auxiliares
+# ------------------------------------------------------------
+
+msg() {
+  echo -e "\033[1;34m[AVIS Setup]\033[0m $1"
+}
+
+check_cmd() {
+  command -v "$1" >/dev/null 2>&1
+}
+
+# ------------------------------------------------------------
+# 1. Criar estrutura de diretórios
+# ------------------------------------------------------------
+
+msg "Criando estrutura de diretórios..."
+
+mkdir -p "$PROJECT_ROOT"/{backend/{python-fastapi,nestjs},openapi,scripts,.github/workflows}
+
+# ------------------------------------------------------------
+# 2. Criar arquivo README base
+# ------------------------------------------------------------
+cat > "$PROJECT_ROOT/README.md" <<'EOF'
 # AVIS Donazioni - Backend
 
 Este projeto implementa o backend do aplicativo **AVIS Donazioni**, inspirado no **NHS GiveBlood (UK)**, para a Itália.
@@ -122,3 +158,9 @@ jobs:
 
       - name: Run tests
         run: echo "TODO: Add tests here"
+EOF
+
+echo "✅ Workflow GitHub Actions criado!"
+echo ""
+echo "🚀 Setup completo do AVIS Backend finalizado!"
+
