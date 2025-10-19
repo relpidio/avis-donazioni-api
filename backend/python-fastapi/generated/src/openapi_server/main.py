@@ -21,6 +21,8 @@ from openapi_server.apis.centers_api import router as CentersApiRouter
 from openapi_server.apis.donors_api import router as DonorsApiRouter
 from openapi_server.apis.notifications_api import router as NotificationsApiRouter
 from openapi_server.apis.tests_api import router as TestsApiRouter
+from openapi_server.api.centers_api import router as centers_router
+
 
 app = FastAPI(
     title="AVIS Donazioni API",
@@ -34,3 +36,4 @@ app.include_router(CentersApiRouter)
 app.include_router(DonorsApiRouter)
 app.include_router(NotificationsApiRouter)
 app.include_router(TestsApiRouter)
+app.include_router(centers_router, tags=["AVIS Centers"])
