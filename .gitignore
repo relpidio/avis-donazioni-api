@@ -1,4 +1,4 @@
-# macOS
+Avis_App/openapitools.json# macOS
 .DS_Store
 
 # Node
@@ -23,3 +23,8 @@ ios/
 # IDEs
 .vscode/
 .idea/
+
+../../../setup_avis_mobile.sh
+frontend/mobile/src/screens/HomeScreen.tsx
+Avis_App/openapitools.json
+setup_avis_mobile.sh
