@@ -21,7 +21,7 @@ from openapi_server.apis.centers_api import router as CentersApiRouter
 from openapi_server.apis.donors_api import router as DonorsApiRouter
 from openapi_server.apis.notifications_api import router as NotificationsApiRouter
 from openapi_server.apis.tests_api import router as TestsApiRouter
-from openapi_server.api.centers_api import router as centers_router
+from openapi_server.apis.centers_api import router as centers_router
 
 
 app = FastAPI(

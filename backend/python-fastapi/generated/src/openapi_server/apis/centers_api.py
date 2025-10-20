@@ -1,76 +1,63 @@
-# coding: utf-8
-
-from typing import Dict, List  # noqa: F401
-import importlib
-import pkgutil
-
-from openapi_server.apis.centers_api_base import BaseCentersApi
-import openapi_server.impl
-
-from fastapi import (  # noqa: F401
-    APIRouter,
-    Body,
-    Cookie,
-    Depends,
-    Form,
-    Header,
-    HTTPException,
-    Path,
-    Query,
-    Response,
-    Security,
-    status,
-)
-
-from openapi_server.models.extra_models import TokenModel  # noqa: F401
-from datetime import date
-from pydantic import StrictFloat, StrictInt, StrictStr
-from typing import List, Optional, Union
-from openapi_server.models.center import Center
-from openapi_server.models.slot import Slot
-
+from fastapi import APIRouter
+from pydantic import BaseModel
+from typing import List
 
 router = APIRouter()
 
-ns_pkg = openapi_server.impl
-for _, name, _ in pkgutil.iter_modules(ns_pkg.__path__, ns_pkg.__name__ + "."):
-    importlib.import_module(name)
+class Center(BaseModel):
+    id: int
+    name: str
+    address: str
+    phone: str
+    city: str
+    province: str
+    latitude: float
+    longitude: float
 
+CENTERS = [
+    Center(
+        id=1,
+        name="AVIS Comunale Asti",
+        address="Via del Donatore 10, Asti",
+        phone="+39 0141 123456",
+        city="Asti",
+        province="AT",
+        latitude=44.9005,
+        longitude=8.2064,
+    ),
+    Center(
+        id=2,
+        name="AVIS Provinciale Torino",
+        address="Corso Galileo Ferraris 65, Torino",
+        phone="+39 011 987654",
+        city="Torino",
+        province="TO",
+        latitude=45.0628,
+        longitude=7.6786,
+    ),
+    Center(
+        id=3,
+        name="AVIS Comunale Ivrea",
+        address="Piazza Ottinetti 8, Ivrea",
+        phone="+39 0125 665544",
+        city="Ivrea",
+        province="TO",
+        latitude=45.4664,
+        longitude=7.8763,
+    ),
+    Center(
+        id=4,
+        name="AVIS Comunale Alba",
+        address="Via Vittorio Emanuele 20, Alba",
+        phone="+39 0173 332211",
+        city="Alba",
+        province="CN",
+        latitude=44.7005,
+        longitude=8.0326,
+    ),
+]
 
-@router.get(
-    "/centers/{centerId}/availability",
-    responses={
-        200: {"model": List[Slot], "description": "Slots disponibili"},
-    },
-    tags=["centers"],
-    summary="Disponibilità (slots) per centro",
-    response_model_by_alias=True,
-)
-async def centers_center_id_availability_get(
-    centerId: StrictStr = Path(..., description=""),
-    date_from: Optional[date] = Query(None, description="", alias="date_from"),
-    date_to: Optional[date] = Query(None, description="", alias="date_to"),
-) -> List[Slot]:
-    if not BaseCentersApi.subclasses:
-        raise HTTPException(status_code=500, detail="Not implemented")
-    return await BaseCentersApi.subclasses[0]().centers_center_id_availability_get(centerId, date_from, date_to)
-
-
-@router.get(
-    "/centers",
-    responses={
-        200: {"model": List[Center], "description": "Lista centri"},
-    },
-    tags=["centers"],
-    summary="Lista centri (filtro per regione/coordinate/tipo)",
-    response_model_by_alias=True,
-)
-async def centers_get(
-    lat: Optional[Union[StrictFloat, StrictInt]] = Query(None, description="", alias="lat"),
-    lng: Optional[Union[StrictFloat, StrictInt]] = Query(None, description="", alias="lng"),
-    radius_km: Optional[StrictInt] = Query(50, description="", alias="radius_km"),
-    region: Optional[StrictStr] = Query(None, description="", alias="region"),
-) -> List[Center]:
-    if not BaseCentersApi.subclasses:
-        raise HTTPException(status_code=500, detail="Not implemented")
-    return await BaseCentersApi.subclasses[0]().centers_get(lat, lng, radius_km, region)
+@router.get("/centers", response_model=List[Center])
+async def get_centers():
+    """Retorna a lista de centros AVIS no Piemonte."""
+    return CENTERS
