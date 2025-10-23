@@ -28,3 +28,13 @@ ios/
 frontend/mobile/src/screens/HomeScreen.tsx
 Avis_App/openapitools.json
 setup_avis_mobile.sh
+
+.github/copilot-instructions.md
+frontend/mobile/fix_exports_order.sh
+frontend/mobile/fix_home_screen.sh
+frontend/mobile/fix_login_screen.sh
+frontend/mobile/fix_register_screen.sh
+frontend/mobile/setup_appointments_module.sh
+frontend/mobile/setup_auth_module.sh
+frontend/mobile/src/assets/grape_heart.png
+frontend/mobile/src/navigation/AppNavigator.tsx.bak
