@@ -12,7 +12,7 @@ expo-env.d.ts
 # Native
 .kotlin/
 *.orig.*
-*.jks
+i*.jks
 *.p8
 *.p12
 *.key
@@ -39,3 +39,6 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+../../../frontend/mobile/package-lock.json
+../../../frontend/mobile/package.json
+../../.gitignore
