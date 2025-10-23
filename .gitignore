@@ -38,3 +38,5 @@ frontend/mobile/setup_appointments_module.sh
 frontend/mobile/setup_auth_module.sh
 frontend/mobile/src/assets/grape_heart.png
 frontend/mobile/src/navigation/AppNavigator.tsx.bak
+frontend/mobile/package-lock.json
+frontend/mobile/package.json
