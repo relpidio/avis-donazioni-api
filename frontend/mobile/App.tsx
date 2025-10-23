@@ -1,20 +1,14 @@
-import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import HomeScreen from './src/screens/HomeScreen';
+import React from "react";
+import { AuthProvider } from "./src/context/AuthContext";
+import AppNavigator from "./src/navigation/AppNavigator";
+import { LogBox } from "react-native";
 
-const Stack = createNativeStackNavigator();
+LogBox.ignoreLogs(["Warning: ..."]); // Ignorar avisos específicos
 
 export default function App() {
   return (
-    <NavigationContainer>
-      <Stack.Navigator>
-        <Stack.Screen
-          name="Home"
-          component={HomeScreen}
-          options={{ title: 'AVIS Donazioni' }}
-        />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <AuthProvider>
+      <AppNavigator />
+    </AuthProvider>
   );
 }
