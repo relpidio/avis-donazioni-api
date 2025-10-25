@@ -13,10 +13,11 @@ export const login = async (email: string, password: string) => {
   return data;
 };
 
-export const register = async (name: string, email: string, password: string) => {
-  const data = await apiRequest("/auth/register", "POST", { name, email, password });
-  await AsyncStorage.setItem("token", data.access_token);
-  return data;
+export const register = async (data: any) => {
+  // Send the data directly without nesting it under 'name'
+  const response = await apiRequest("/auth/register", "POST", data);
+  await AsyncStorage.setItem("token", response.access_token);
+  return response;
 };
 
 export const logout = async () => {
