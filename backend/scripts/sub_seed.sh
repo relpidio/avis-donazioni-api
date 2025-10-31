@@ -37,7 +37,6 @@ PYTHONPATH="$PYTHONPATH_DIR" "$VENV_PY" <<'EOF'
 import os, sys, traceback
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from passlib.hash import bcrypt
 
 pp = os.getenv("PYTHONPATH")
 if pp and pp not in sys.path:
@@ -45,8 +44,9 @@ if pp and pp not in sys.path:
 
 try:
     from openapi_server.models import User
+    from openapi_server.core.security import get_password_hash
 except Exception:
-    print("❌ Erro ao importar User de openapi_server.models")
+    print("❌ Erro ao importar módulos necessários.")
     traceback.print_exc()
     raise
 
@@ -59,11 +59,13 @@ SessionLocal = sessionmaker(bind=engine)
 try:
     session = SessionLocal()
     admin = session.query(User).filter_by(email="admin@avis.com").first()
+
     if not admin:
         print("👤 Criando usuário admin padrão...")
+        hashed_pw = get_password_hash("123456")
         admin = User(
             email="admin@avis.com",
-            hashed_password=bcrypt.hash("123456"),
+            hashed_password=hashed_pw,
             full_name="Administrador",
             role="admin",
             is_active=True
@@ -72,7 +74,7 @@ try:
         session.commit()
         print("✅ Usuário admin criado com sucesso!")
     else:
-        print("ℹ️  Usuário admin já existe, nada a fazer.")
+        print("ℹ️ Usuário admin já existe, nada a fazer.")
 finally:
     session.close()
 EOF

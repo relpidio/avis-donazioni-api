@@ -10,6 +10,15 @@ import logging
 import traceback
 from openapi_server.routers import auth_router
 
+# Importa todos os módulos de rotas existentes - New
+from openapi_server.apis import (
+    centers_api,
+    appointments_api,
+    donors_api,
+    users_api,
+    auth_api_old,
+)
+
 # 🧩 Configura logs detalhados
 logging.basicConfig(level=logging.DEBUG)
 
@@ -26,6 +35,13 @@ app.add_middleware(
 
 # ✅ Inclui rotas
 app.include_router(auth_router.router)
+
+# ✅ Inclui todas as rotas - New
+app.include_router(auth_api_old.router)
+app.include_router(users_api.router)
+app.include_router(centers_api.router)
+app.include_router(appointments_api.router)
+app.include_router(donors_api.router)
 
 @app.get("/")
 def root():
