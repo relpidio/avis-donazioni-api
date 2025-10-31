@@ -29,12 +29,14 @@ export default function AppNavigator() {
             <Stack.Screen name="Welcome" component={WelcomeScreen} />
             <Stack.Screen name="Login" component={LoginScreen} />
             <Stack.Screen name="Register" component={RegisterScreen} />
+          </>
+        ) : (
+          <>
+            <Stack.Screen name="Home" component={HomeScreen} />
             <Stack.Screen name="AppointmentsList" component={AppointmentsListScreen} />
             <Stack.Screen name="AppointmentBooking" component={AppointmentBookingScreen} />
             <Stack.Screen name="AppointmentDetails" component={AppointmentDetailsScreen} />
           </>
-        ) : (
-          <Stack.Screen name="Home" component={HomeScreen} />
         )}
       </Stack.Navigator>
     </NavigationContainer>

@@ -43,8 +43,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         const token = await AsyncStorage.getItem("token");
         if (token) {
-          const userData = await getUserFromToken(token);
-          setUser(userData);
+  // Ainda guarda o token, mas não faz login automático
+  console.log("Token encontrado, mas aguardando login manual.");
+} else {
+  console.log("Nenhum token salvo, login necessário.");
         }
       } catch (error) {
         console.warn("Falha ao carregar usuário:", error);
@@ -66,7 +68,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (!token) {
         throw new Error("Token de autenticação não recebido");
       }
-      await AsyncStorage.setItem("token", token);
+      await AsyncStorage.setItem("token", JSON.stringify(token));
       const userData = await getUserFromToken(token);
       if (!userData) {
         throw new Error("Dados do usuário não encontrados");
@@ -89,7 +91,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (!token) {
         throw new Error("Token de registro não recebido");
       }
-      await AsyncStorage.setItem("token", token);
+      await AsyncStorage.setItem("token", JSON.stringify(token));
       const userData = await getUserFromToken(token);
       if (!userData) {
         throw new Error("Dados do usuário não encontrados após registro");
