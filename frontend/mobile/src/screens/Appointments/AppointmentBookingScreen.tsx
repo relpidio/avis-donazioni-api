@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from "react-native";
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, TextInput } from "react-native";
+import * as Location from "expo-location";
 import dayjs from "dayjs";
 import { useNavigation } from "@react-navigation/native";
 import { useMutation } from "@tanstack/react-query";
 import { listCenters, getCenterAvailability, createAppointment, Center, Slot } from "../../services/appointments";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function AppointmentBookingScreen() {
   const nav = useNavigation<any>();
@@ -12,19 +14,37 @@ export default function AppointmentBookingScreen() {
   const [selectedCenter, setSelectedCenter] = useState<Center | null>(null);
   const [slots, setSlots] = useState<Slot[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
-    (async () => {
-      try {
-        const data = await listCenters();
-        setCenters(data);
-      } catch (e: any) {
-        Alert.alert("Erro", e?.message || "Falha ao carregar centros.");
-      } finally {
-        setLoadingCenters(false);
-      }
-    })();
+    fetchCenters();
   }, []);
+
+  const fetchCenters = async (query?: string) => {
+    try {
+      setLoadingCenters(true);
+      const data = await listCenters(query);
+      setCenters(data);
+    } catch (e: any) {
+      Alert.alert("Erro", e?.message || "Falha ao carregar centros.");
+    } finally {
+      setLoadingCenters(false);
+    }
+  };
+
+  const useLocation = async () => {
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert("Permissão negada", "Ative a localização para encontrar centros próximos.");
+        return;
+      }
+      const loc = await Location.getCurrentPositionAsync({});
+      await fetchCenters(`${loc.coords.latitude},${loc.coords.longitude}`);
+    } catch (e: any) {
+      Alert.alert("Erro", "Não foi possível usar sua localização.");
+    }
+  };
 
   const loadSlots = async (center: Center) => {
     setSelectedCenter(center);
@@ -51,7 +71,24 @@ export default function AppointmentBookingScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.h1}>Escolha um centro AVIS</Text>
+      <Text style={styles.h1}>Find a blood donation venue near you</Text>
+
+      <View style={styles.searchContainer}>
+        <TextInput
+          placeholder="Enter a town, city or postal code"
+          value={search}
+          onChangeText={setSearch}
+          style={styles.searchInput}
+        />
+        <TouchableOpacity style={styles.searchButton} onPress={() => fetchCenters(search)}>
+          <Ionicons name="search" size={20} color="#fff" />
+        </TouchableOpacity>
+      </View>
+
+      <TouchableOpacity style={styles.locationButton} onPress={useLocation}>
+        <Ionicons name="location-outline" size={18} color="#007BFF" />
+        <Text style={styles.locationText}>Use your location</Text>
+      </TouchableOpacity>
 
       {loadingCenters ? (
         <View style={styles.center}><ActivityIndicator /><Text>Carregando centros...</Text></View>
@@ -76,7 +113,7 @@ export default function AppointmentBookingScreen() {
         />
       )}
 
-      <Text style={[styles.h2, { marginTop: 12 }]}>Horários disponíveis</Text>
+      <Text style={[styles.h2, { marginTop: 12 }]}>Available time slots</Text>
       {loadingSlots ? (
         <View style={styles.center}><ActivityIndicator /><Text>Buscando horários...</Text></View>
       ) : selectedCenter ? (
@@ -90,10 +127,10 @@ export default function AppointmentBookingScreen() {
               </Text>
             </TouchableOpacity>
           )}
-          ListEmptyComponent={<Text style={{ textAlign: "center", marginTop: 16 }}>Sem horários para este centro.</Text>}
+          ListEmptyComponent={<Text style={{ textAlign: "center", marginTop: 16 }}>No available slots for this center.</Text>}
         />
       ) : (
-        <Text style={{ marginTop: 8 }}>Selecione um centro para ver os horários.</Text>
+        <Text style={{ marginTop: 8 }}>Select a center to view time slots.</Text>
       )}
     </View>
   );
@@ -102,12 +139,14 @@ export default function AppointmentBookingScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff", padding: 16 },
   center: { alignItems: "center", justifyContent: "center" },
-  h1: { fontSize: 18, fontWeight: "700", marginBottom: 8, color: "#222" },
+  h1: { fontSize: 18, fontWeight: "700", marginBottom: 8, color: "#B00020", textAlign: "center" },
   h2: { fontSize: 16, fontWeight: "700", color: "#222" },
-  centerPill: {
-    paddingVertical: 10, paddingHorizontal: 14, borderRadius: 9999,
-    backgroundColor: "#e9ecef",
-  },
+  searchContainer: { flexDirection: "row", alignItems: "center", marginVertical: 10 },
+  searchInput: { flex: 1, borderWidth: 1, borderColor: "#ccc", borderRadius: 6, padding: 10 },
+  searchButton: { marginLeft: 8, backgroundColor: "#007BFF", borderRadius: 6, padding: 10 },
+  locationButton: { flexDirection: "row", justifyContent: "center", alignItems: "center", marginVertical: 10 },
+  locationText: { marginLeft: 5, color: "#007BFF", fontWeight: "600" },
+  centerPill: { paddingVertical: 10, paddingHorizontal: 14, borderRadius: 9999, backgroundColor: "#e9ecef" },
   centerPillActive: { backgroundColor: "#0066B3" },
   centerPillTxt: { color: "#222", fontWeight: "700" },
   slotCard: { padding: 14, borderRadius: 10, backgroundColor: "#f6f7f9", marginBottom: 10 },
